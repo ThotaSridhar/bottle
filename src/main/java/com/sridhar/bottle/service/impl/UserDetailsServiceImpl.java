@@ -1,39 +1,43 @@
 package com.sridhar.bottle.service.impl;
 
 import com.sridhar.bottle.domain.User;
+import com.sridhar.bottle.reponsitory.UserRepository;
+import com.sridhar.bottle.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 
 @Service
-public class UserDetailsServiceImpl implements UserDetailsService {
+public class UserDetailsServiceImpl implements UserService {
 
-    static Map<String, User> userMap = new HashMap<>();
-    static {
-        User user = new User();
-        user.setId("1");
-        user.setUsername("admin");
-        user.setPassword("admin");
-        user.setAuthority("ADMIN");
-        userMap.put(user.getUsername(), user);
 
-        User user2 = new User();
-        user2.setId("2");
-        user2.setUsername("user");
-        user2.setPassword("user");
-        user2.setAuthority("USER");
-        userMap.put(user2.getUsername(), user2);
-    }
+    @Autowired
+    UserRepository userRepository;
+    @Autowired
+    PasswordEncoder encoder;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        if(userMap.containsKey(username)){
-            return userMap.get(username);
+        Optional<User> user=  userRepository.findByUsername(username);
+        return user.orElseThrow(()-> new UsernameNotFoundException("user not found"));
+    }
+
+    @Override
+    public void addUser(User user) {
+        Optional<User> opUser= userRepository.findByUsername(user.getUsername());
+        if(opUser.isEmpty()){
+            user.setAuthority("USER");
+            user.setPassword(encoder.encode(user.getPassword()));
+            userRepository.save(user);
         }
-        else throw new UsernameNotFoundException("User not found");
+        else throw new RuntimeException("user already exists");
     }
 }

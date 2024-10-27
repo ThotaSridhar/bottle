@@ -1,15 +1,17 @@
 package com.sridhar.bottle.controller;
 
 import com.sridhar.bottle.domain.Book;
+import com.sridhar.bottle.reponsitory.UserRepository;
 import com.sridhar.bottle.service.BookService;
+import com.sridhar.bottle.service.UserService;
+import com.sridhar.bottle.service.resource.UserRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.*;
 
 
@@ -19,6 +21,8 @@ public class UserController {
 
     @Autowired
     BookService bookService;
+    @Autowired
+    UserService   userService;
 
     @GetMapping("/book")
     public ResponseEntity<?> getAllBook(){
@@ -36,6 +40,11 @@ public class UserController {
         List<Book>  bs;
         bs = bookService.getBookByAuthor(author);
         return new ResponseEntity<>(bs,HttpStatus.ACCEPTED);
+    }
+    @PostMapping("/register")
+    public ResponseEntity<?> addBook(@RequestBody @Valid UserRequest userRequest){
+        userService.addUser(userRequest.getUser());
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 }
 
